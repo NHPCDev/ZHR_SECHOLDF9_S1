@@ -209,6 +209,10 @@ sap.ui.define([
                             oViewModel.setProperty("/formDetails/PersonnelSubAreaText", oResp.results[0].PLANT);
                             oViewModel.setProperty("/formDetails/EmployeeDepartment", `${oResp.results[0].DEP_CODE} - ${oResp.results[0].DEP}`);
                             oViewModel.setProperty("/formDetails/PositionText", oResp.results[0].DESIG);
+                            oViewModel.setProperty("/formDetails/USRID", oResp.results[0].USRID);
+                            oViewModel.setProperty("/formDetails/MOBILE", oResp.results[0].MOBILE);
+                            oViewModel.setProperty("/formDetails/EMAIL", oResp.results[0].EMAIL);
+                            oViewModel.setProperty("/formDetails/DATE_JOIN", oResp.results[0].DATE_JOIN);
                             if (sPernr === "New") {
                                 let bFilters = [
                                     new Filter(
@@ -756,6 +760,15 @@ sap.ui.define([
             let oViewModel = this.getModel("viewModel");
             let sNatureOfSecurity = oViewModel.getProperty("/selectedTransactionRelatives/NatureOfSecurity")
             let sRelative = oEvent.getSource().getSelectedKey().trim();
+            var oData = oEvent.getSource().getSelectedItem()?.getBindingContext("viewModel").getObject();
+            oViewModel.setProperty("/selectedTransactionRelatives/Relativetype", oData.RelationOfImmediateRelative);
+            // oViewModel.setProperty("/selectedTransactionRelatives/Relativeno", oData.RelativeType);
+            oViewModel.setProperty("/selectedTransactionRelatives/PanNumber", oData.PanOfImmediateRelative);
+            if (sRelative === "Others") {
+                oViewModel.setProperty("/editable/RelativeType", true);
+            } else {
+                oViewModel.setProperty("/editable/RelativeType", false);
+            }
             if (!sNatureOfSecurity || !sRelative) {
                 return;
             }
@@ -766,16 +779,7 @@ sap.ui.define([
                     oLatestRecord = aData[i];
                     break;
                 }
-            }
-            var oData = oEvent.getSource().getSelectedItem()?.getBindingContext("viewModel").getObject();
-            oViewModel.setProperty("/selectedTransactionRelatives/Relativetype", oData.RelationOfImmediateRelative);
-            // oViewModel.setProperty("/selectedTransactionRelatives/Relativeno", oData.RelativeType);
-            oViewModel.setProperty("/selectedTransactionRelatives/PanNumber", oData.PanOfImmediateRelative);
-            if (sRelative === "Others") {
-                oViewModel.setProperty("/editable/RelativeType", true);
-            } else {
-                oViewModel.setProperty("/editable/RelativeType", false);
-            }
+            }            
             if (oLatestRecord) {
                 oViewModel.setProperty("/selectedTransactionRelatives/Noofsecuritiesprev", oLatestRecord.Noofsecuritiesheld);
                 oViewModel.setProperty("/editable/relatives/Noofsecuritiesprev", false);

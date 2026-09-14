@@ -106,35 +106,54 @@ sap.ui.define([
             }
         },
         onDownload: function () {
-            var oTable = this.byId("idDashboardTable");
-            var oBinding = oTable.getBinding("items");
-            var aData = oBinding.getContexts().map(function (oContext) {
-                var oData = Object.assign({}, oContext.getObject());
-                oData.CreatedOn = formatter.formatDate(oData.CreatedOn);
-                oData.ConfirmedOn = formatter.formatDate(oData.ConfirmedOn);
-                return oData;
+            var oModel = this.getModel();
+            let oResourceBundle = this.getResourceBundle();
+            var aFilters = [
+                new sap.ui.model.Filter(
+                    "ApproverFlag",
+                    sap.ui.model.FilterOperator.EQ,
+                    "R"
+                ),
+                new sap.ui.model.Filter(
+                    "FormNo",
+                    sap.ui.model.FilterOperator.EQ,
+                    "FORM9"
+                )
+            ];
+            BusyIndicator.show(0);
+            oModel.read("/Form9headSet", {
+                filters: aFilters,
+                success: function (oData) {
+                    var aData = oData.results.map(function (oData) {
+                        var oRow = Object.assign({}, oData);
+                        oRow.CreatedOn = formatter.formatDate(oRow.CreatedOn);
+                        oRow.ConfirmedOn = formatter.formatDate(oRow.ConfirmedOn);
+                        return oRow;
+                    });
+                    var aCols = this.createColumnConfig();
+                    var oSettings = {
+                        workbook: {
+                            columns: aCols
+                        },
+                        dataSource: aData,
+                        fileType: "xlsx",
+                        fileName: this.getResourceBundle().getText("title")
+                    };
+                    var oSheet = new Spreadsheet(oSettings);
+                    oSheet.build()
+                        .finally(function () {
+                            oSheet.destroy();
+                            BusyIndicator.hide();
+                        });
+                }.bind(this),
+                error: function () {
+                    BusyIndicator.hide();
+                    messenger.error(oResourceBundle.getText("failedToDownloadData"));
+                }
             });
-            var aCols = this.createColumnConfig();
-            var oSettings = {
-                workbook: {
-                    columns: aCols
-                },
-                dataSource: aData,
-                fileType: "xlsx",
-                fileName: this.getResourceBundle().getText("title")
-            };
-            var oSheet = new Spreadsheet(oSettings);
-            oSheet.build()
-                .finally(function () {
-                    oSheet.destroy();
-                });
         },
         createColumnConfig: function () {
             var aCols = [];
-            aCols.push({
-                label: this.getResourceBundle().getText("sno"),
-                property: "Sno"
-            });
             aCols.push({
                 label: this.getResourceBundle().getText("employeeID"),
                 property: "Pernr"
@@ -152,12 +171,24 @@ sap.ui.define([
                 property: "ConfirmedOn",
             });
             aCols.push({
+                label: this.getResourceBundle().getText("ConfirmedByPernr"),
+                property: "Pernr"
+            });
+            aCols.push({
                 label: this.getResourceBundle().getText("ConfirmedBy"),
                 property: "EmployeeName"
             });
             aCols.push({
                 label: this.getResourceBundle().getText("status"),
                 property: "Status"
+            });
+            aCols.push({
+                label: this.getResourceBundle().getText("delayedStatus"),
+                property: "Delayed"
+            });
+            aCols.push({
+                label: this.getResourceBundle().getText("contraStatus"),
+                property: "Contra"
             });
             return aCols;
         },

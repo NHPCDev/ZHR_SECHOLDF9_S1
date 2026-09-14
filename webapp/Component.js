@@ -78,12 +78,10 @@ sap.ui.define([
             }
 
             oViewModel.setProperty("/financialYearStart", oFinancialYearStart);
-            oViewModel.setProperty("/financialYearEnd", oFinancialYearEnd);
-
-            await this._checkEligibility();
-
+            oViewModel.setProperty("/financialYearEnd", oFinancialYearEnd);           
             // enable routing
             this.getRouter().initialize();
+            await this._checkEligibility();
             messenger.init(this);
         },
         _checkEligibility: async function () {
@@ -95,13 +93,10 @@ sap.ui.define([
                 filters: aFilters,
                 success: function (oResponse) {
                     if (oResponse.results && oResponse.results.length > 0 && oResponse.results[0].AuthResponse === "No") {
-                        this.getRouter().initialize();
-                        this.getRouter().navTo("RouteErrorPage");
-
+                        this.getRouter().navTo("RouteErrorPage",{},true);
                     }
                 }.bind(this),
                 error: function () {
-                    this.getRouter().initialize();
                 }.bind(this)
             });
 
