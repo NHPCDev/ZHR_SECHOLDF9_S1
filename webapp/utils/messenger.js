@@ -1,23 +1,23 @@
 sap.ui.define([
 	"sap/m/MessageBox",
 	"sap/m/MessageToast"
-], function(MessageBox, MessageToast) {
+], function (MessageBox, MessageToast) {
 	"use strict";
 
 	return {
-		init: function(oComponent) {
+		init: function (oComponent) {
 			this._oComponent = oComponent;
 			this._oResourceBundle = oComponent.getModel("i18n").getResourceBundle();
 		},
 
-		error: function(sText, fnCallback) {
+		error: function (sText, fnCallback) {
 			var oMsgSettings = {
 				icon: MessageBox.Icon.ERROR,
 				title: this._oResourceBundle.getText("ERROR_TITLE"),
 				actions: [MessageBox.Action.OK]
 			};
 			if (fnCallback && jQuery.isFunction(fnCallback)) {
-				oMsgSettings.onClose = function(oAction) {
+				oMsgSettings.onClose = function (oAction) {
 					// this.setErrorOpen(false);
 					if (oAction === "OK") {
 						fnCallback();
@@ -55,27 +55,32 @@ sap.ui.define([
 				}.bind(this)
 			);
 		},
-		
-		confirm: function(sTitle, sText, sConfirmCustomAction, sCancelCustomAction, fnCallback, fnCancelCb) {
-			var sConfirmAction, sCancelAction;
-			if (sConfirmCustomAction) {
-				sConfirmAction = sConfirmCustomAction;
-			} else {
-				sConfirmAction = "Proceed";
-			}
+
+		confirm: function (
+			sTitle,
+			sText,
+			sConfirmCustomAction,
+			sCancelCustomAction,
+			fnCallback,
+			fnCancelCb
+		) {
+			var sConfirmAction = sConfirmCustomAction || "Proceed";
+			var aActions = [sConfirmAction];
+
 			if (sCancelCustomAction) {
-				sCancelAction = sCancelCustomAction;
-			} else {
-				sCancelAction = MessageBox.Action.CANCEL;
+				aActions.push(sCancelCustomAction);
 			}
+
 			MessageBox.show(sText, {
 				icon: MessageBox.Icon.QUESTION,
 				title: sTitle,
-				actions: [sConfirmAction, sCancelAction],
-				onClose: function(oAction) {
+				actions: aActions,
+				onClose: function (oAction) {
 					if (oAction === sConfirmAction) {
-						fnCallback();
-					} else if (oAction === sCancelAction) {
+						if (fnCallback) {
+							fnCallback();
+						}
+					} else if (oAction === sCancelCustomAction) {
 						if (fnCancelCb) {
 							fnCancelCb();
 						}
@@ -84,7 +89,7 @@ sap.ui.define([
 			});
 		},
 
-		success: function(sText, fnCallback) {
+		success: function (sText, fnCallback) {
 			MessageBox.show(sText, {
 				icon: MessageBox.Icon.SUCCESS,
 				title: this._oResourceBundle.getText("SUCCESS_TITLE"),

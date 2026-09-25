@@ -30,7 +30,7 @@ sap.ui.define([
                 oViewModel.setProperty("/TransactionHolding", []);
                 oViewModel.setProperty("/TransactionRelatives", []);
                 oViewModel.setProperty("/sNo", "");
-                await this.setUndertakingText();
+                // await this.setUndertakingText();
                 this.byId("objPageHeader").setText(oResourceBundle.getText("createDialogTitle"));
                 this.byId("objPageHeader1").setText(oResourceBundle.getText("createDialogTitle"));
             } else {
@@ -48,6 +48,11 @@ sap.ui.define([
                         "Pernr",
                         FilterOperator.EQ,
                         sPernrName
+                    ),
+                    new Filter(
+                        "DropDown",
+                        FilterOperator.EQ,
+                        "X"
                     )
                 ]
             }
@@ -326,19 +331,18 @@ sap.ui.define([
             let oView = this.getView();
             let oViewModel = this.getModel("viewModel");
             let oTable = this.byId("idTransactionHoldingTable");
-            let sSelectedItem = oTable.getSelectedItem();
-            if (!sSelectedItem) {
+            let iSelectedIndex = oTable.getSelectedIndex();
+            if (iSelectedIndex < 0) {
                 messenger.error(this.getResourceBundle().getText("selectRowToEdit"));
                 return;
             }
-            let sBindingContext = sSelectedItem.getBindingContext("viewModel");
-            let sPath = sBindingContext.getPath();
-            let iIndex = parseInt(sPath.split("/").pop(), 10);
+            let oContext = oTable.getContextByIndex(iSelectedIndex);
+            let oSelectedItem = oContext.getObject();
+            let iIndex = iSelectedIndex;
             if (iIndex === 0) {
                 oViewModel.setProperty("/editable/holdings/Noofsecuritiesprev", true);
             }
-            let oResourceBundle = this.getResourceBundle();
-            let sData = structuredClone(sBindingContext.getObject());
+            let sData = structuredClone(oSelectedItem);
             oViewModel.setProperty("/selectedTransactionHolding", sData);
             oViewModel.setProperty("/selectedTransactionHoldingIndex", iIndex);
             if (!this.oAddHoldingDialog) {
@@ -355,17 +359,16 @@ sap.ui.define([
             let oTable = this.byId("idTransactionHoldingTable");
             let oViewModel = this.getModel("viewModel");
             let oResourceBundle = this.getResourceBundle();
-            let oSelectedItem = oTable.getSelectedItem();
-            if (!oSelectedItem) {
+            let iSelectedIndex = oTable.getSelectedIndex();
+            if (iSelectedIndex < 0) {
                 messenger.error(oResourceBundle.getText("selectRowToDelete"));
                 return;
             }
-            let oContext = oSelectedItem.getBindingContext("viewModel");
-            let sIndex = oContext.getPath().split("/").pop();
-            let sTransactionHoldingTable = oViewModel.getProperty("/TransactionHolding");
-            sTransactionHoldingTable.splice(sIndex, 1);
-            oViewModel.setProperty("/TransactionHolding", sTransactionHoldingTable);
-            messenger.success(oResourceBundle.getText("transactionHoldingDetailsDeleted"));
+            let oTransactionHoldingTable = oViewModel.getProperty("/TransactionHolding");
+            oTransactionHoldingTable.splice(iSelectedIndex, 1);
+            oViewModel.setProperty("/TransactionHolding", oTransactionHoldingTable);
+            oTable.clearSelection();
+            // messenger.success(oResourceBundle.getText("transactionHoldingDetailsDeleted"));
         },
 
         onSaveTransactionHoldingDetails: function () {
@@ -463,7 +466,7 @@ sap.ui.define([
                 oViewModel.setProperty("/valueState/Transactiondate", ValueState.None);
                 oViewModel.setProperty("/valueStateText/Transactiondate", null);
             }
-            if ((!oSecurityDetails.Securitypurchased || oSecurityDetails.Securitypurchased == 0) && oSecurityDetails.securityPurchased === "Bought") {
+            if ((!oSecurityDetails.Securitypurchased || oSecurityDetails.Securitypurchased == 0) && oSecurityDetails.TransactionType === "Bought") {
                 oViewModel.setProperty("/valueState/Securitypurchased", ValueState.Error);
                 oViewModel.setProperty("/valueStateText/Securitypurchased", this.getResourceBundle().getText("SecurityPurchasedRequired"));
                 errors.push(this.getResourceBundle().getText("SecuritypurchasedRequired"));
@@ -471,7 +474,7 @@ sap.ui.define([
                 oViewModel.setProperty("/valueState/Securitypurchased", ValueState.None);
                 oViewModel.setProperty("/valueStateText/Securitypurchased", null);
             }
-            if ((!oSecurityDetails.Securitysold || oSecurityDetails.Securitysold == 0) && oSecurityDetails.securityPurchased === "Sold") {
+            if ((!oSecurityDetails.Securitysold || oSecurityDetails.Securitysold == 0) && oSecurityDetails.TransactionType === "Sold") {
                 oViewModel.setProperty("/valueState/Securitysold", ValueState.Error);
                 oViewModel.setProperty("/valueStateText/Securitysold", this.getResourceBundle().getText("SecuritysoldRequired"));
                 errors.push(this.getResourceBundle().getText("SecuritysoldRequired"));
@@ -479,7 +482,7 @@ sap.ui.define([
                 oViewModel.setProperty("/valueState/Securitysold", ValueState.None);
                 oViewModel.setProperty("/valueStateText/Securitysold", null);
             }
-            if ((!oSecurityDetails.Securitypurchasedconso || oSecurityDetails.Securitypurchasedconso == 0) && oSecurityDetails.securityPurchased === "Bought") {
+            if ((!oSecurityDetails.Securitypurchasedconso || oSecurityDetails.Securitypurchasedconso == 0) && oSecurityDetails.TransactionType === "Bought") {
                 oViewModel.setProperty("/valueState/Securitypurchasedconso", ValueState.Error);
                 oViewModel.setProperty("/valueStateText/Securitypurchasedconso", this.getResourceBundle().getText("SecuritypurchasedconsoRequired"));
                 errors.push(this.getResourceBundle().getText("SecuritypurchasedconsoRequired"));
@@ -487,7 +490,7 @@ sap.ui.define([
                 oViewModel.setProperty("/valueState/Securitypurchasedconso", ValueState.None);
                 oViewModel.setProperty("/valueStateText/Securitypurchasedconso", null);
             }
-            if ((!oSecurityDetails.Securitysoldconso || oSecurityDetails.Securitysoldconso == 0) && oSecurityDetails.securityPurchased === "Sold") {
+            if ((!oSecurityDetails.Securitysoldconso || oSecurityDetails.Securitysoldconso == 0) && oSecurityDetails.TransactionType === "Sold") {
                 oViewModel.setProperty("/valueState/Securitysoldconso", ValueState.Error);
                 oViewModel.setProperty("/valueStateText/Securitysoldconso", this.getResourceBundle().getText("SecuritysoldconsoRequired"));
                 errors.push(this.getResourceBundle().getText("SecuritysoldconsoRequired"));
@@ -508,9 +511,9 @@ sap.ui.define([
 
         onTransactionHoldingTableUpdateFinish: function () {
             let oViewModel = this.getModel("viewModel");
-            let sTransactionHoldings = oViewModel.getProperty("/TransactionHolding") || [];
-            let sTransactionHoldingsLength = sTransactionHoldings.length;
-            oViewModel.setProperty("/TransactionHoldingLength", sTransactionHoldingsLength);
+            let aTransactionHoldings = oViewModel.getProperty("/TransactionHolding") || [];
+            let iLength = aTransactionHoldings.length;
+            oViewModel.setProperty("/TransactionHoldingLength", iLength);
         },
 
         onAddSecurityDetailsRelatives: async function () {
@@ -536,14 +539,12 @@ sap.ui.define([
             let oView = this.getView();
             let oViewModel = this.getModel("viewModel");
             let oTable = this.byId("idTransactionRelativeTable");
-            let oSelectedItem = oTable.getSelectedItem();
-            if (!oSelectedItem) {
+            let iIndex = oTable.getSelectedIndex();
+            if (iIndex < 0) {
                 messenger.error(this.getResourceBundle().getText("selectRowToEdit"));
                 return;
             }
-            let oContext = oSelectedItem.getBindingContext("viewModel");
-            let sPath = oContext.getPath();
-            let iIndex = parseInt(sPath.split("/").pop(), 10);
+            let oContext = oTable.getContextByIndex(iIndex);
             let oData = structuredClone(oContext.getObject());
             let aData = oViewModel.getProperty("/TransactionRelatives") || [];
             let bFirstOccurrence = true;
@@ -570,22 +571,20 @@ sap.ui.define([
             }
             this.oAddRelativeDialog.open();
         },
-
         onDeleteSecurityDetailsRelatives: function () {
             let oTable = this.byId("idTransactionRelativeTable");
             let oViewModel = this.getModel("viewModel");
             let oResourceBundle = this.getResourceBundle();
-            let oSelectedItem = oTable.getSelectedItem();
-            if (!oSelectedItem) {
+            let iIndex = oTable.getSelectedIndex();
+            if (iIndex < 0) {
                 messenger.error(oResourceBundle.getText("selectRowToDelete"));
                 return;
             }
-            let oContext = oSelectedItem.getBindingContext("viewModel");
-            let sIndex = oContext.getPath().split("/").pop();
-            let sTransactionHoldingTable = oViewModel.getProperty("/TransactionRelatives");
-            sTransactionHoldingTable.splice(sIndex, 1);
-            oViewModel.setProperty("/TransactionRelatives", sTransactionHoldingTable);
-            messenger.success(oResourceBundle.getText("transactionRelativeDetailsDeleted"));
+            let aTransactionRelatives = oViewModel.getProperty("/TransactionRelatives") || [];
+            aTransactionRelatives.splice(iIndex, 1);
+            oViewModel.setProperty("/TransactionRelatives", aTransactionRelatives);
+            oTable.clearSelection();
+            // messenger.success(oResourceBundle.getText("transactionRelativeDetailsDeleted"));
         },
 
         onSaveTransactionRelativeDetails: function () {
@@ -645,7 +644,7 @@ sap.ui.define([
             }
             if (!oSecurityDetails.Relativename) {
                 oViewModel.setProperty("/valueState/Relativename", ValueState.Error);
-                oViewModel.setProperty("/valueStateText/Relativename", this.getResourceBundle().getText("NoofsecuritiesprevRequired"));
+                oViewModel.setProperty("/valueStateText/Relativename", this.getResourceBundle().getText("RelativenameRequired"));
                 errors.push(this.getResourceBundle().getText("RelativenameRequired"));
             } else {
                 oViewModel.setProperty("/valueState/Relativename", ValueState.None);
@@ -707,7 +706,7 @@ sap.ui.define([
                 oViewModel.setProperty("/valueState/Transactiondate", ValueState.None);
                 oViewModel.setProperty("/valueStateText/Transactiondate", null);
             }
-            if ((!oSecurityDetails.Securitypurchased || oSecurityDetails.Securitypurchased == 0) && oSecurityDetails.securityPurchased === "Bought") {
+            if ((!oSecurityDetails.Securitypurchased || oSecurityDetails.Securitypurchased == 0) && oSecurityDetails.TransactionType === "Bought") {
                 oViewModel.setProperty("/valueState/Securitypurchased", ValueState.Error);
                 oViewModel.setProperty("/valueStateText/Securitypurchased", this.getResourceBundle().getText("SecurityPurchasedRequired"));
                 errors.push(this.getResourceBundle().getText("SecuritypurchasedRequired"));
@@ -715,7 +714,7 @@ sap.ui.define([
                 oViewModel.setProperty("/valueState/Securitypurchased", ValueState.None);
                 oViewModel.setProperty("/valueStateText/Securitypurchased", null);
             }
-            if ((!oSecurityDetails.Securitysold || oSecurityDetails.Securitysold == 0) && oSecurityDetails.securityPurchased === "Sold") {
+            if ((!oSecurityDetails.Securitysold || oSecurityDetails.Securitysold == 0) && oSecurityDetails.TransactionType === "Sold") {
                 oViewModel.setProperty("/valueState/Securitysold", ValueState.Error);
                 oViewModel.setProperty("/valueStateText/Securitysold", this.getResourceBundle().getText("SecuritysoldRequired"));
                 errors.push(this.getResourceBundle().getText("SecuritysoldRequired"));
@@ -723,7 +722,7 @@ sap.ui.define([
                 oViewModel.setProperty("/valueState/Securitysold", ValueState.None);
                 oViewModel.setProperty("/valueStateText/Securitysold", null);
             }
-            if ((!oSecurityDetails.Securitypurchasedconso || oSecurityDetails.Securitypurchasedconso == 0) && oSecurityDetails.securityPurchased === "Bought") {
+            if ((!oSecurityDetails.Securitypurchasedconso || oSecurityDetails.Securitypurchasedconso == 0) && oSecurityDetails.TransactionType === "Bought") {
                 oViewModel.setProperty("/valueState/Securitypurchasedconso", ValueState.Error);
                 oViewModel.setProperty("/valueStateText/Securitypurchasedconso", this.getResourceBundle().getText("SecuritypurchasedconsoRequired"));
                 errors.push(this.getResourceBundle().getText("SecuritypurchasedconsoRequired"));
@@ -731,7 +730,7 @@ sap.ui.define([
                 oViewModel.setProperty("/valueState/Securitypurchasedconso", ValueState.None);
                 oViewModel.setProperty("/valueStateText/Securitypurchasedconso", null);
             }
-            if ((!oSecurityDetails.Securitysoldconso || oSecurityDetails.Securitysoldconso == 0) && oSecurityDetails.securityPurchased === "Sold") {
+            if ((!oSecurityDetails.Securitysoldconso || oSecurityDetails.Securitysoldconso == 0) && oSecurityDetails.TransactionType === "Sold") {
                 oViewModel.setProperty("/valueState/Securitysoldconso", ValueState.Error);
                 oViewModel.setProperty("/valueStateText/Securitysoldconso", this.getResourceBundle().getText("SecuritysoldconsoRequired"));
                 errors.push(this.getResourceBundle().getText("SecuritysoldconsoRequired"));
@@ -751,17 +750,27 @@ sap.ui.define([
         },
         onTransactionRelativeTableUpdateFinish: function () {
             let oViewModel = this.getModel("viewModel");
-            let sTransactionHoldings = oViewModel.getProperty("/TransactionRelatives") || [];
-            let sTransactionHoldingsLength = sTransactionHoldings.length;
-            oViewModel.setProperty("/TransactionRelativesLength", sTransactionHoldingsLength);
+            let aTransactionRelatives = oViewModel.getProperty("/TransactionRelatives") || [];
+            let iLength = aTransactionRelatives.length;
+            oViewModel.setProperty("/TransactionRelativesLength", iLength);
         },
         onRelativeChange: async function (oEvent) {
             await this.onComboboxChange(oEvent);
             let that = this;
             let oModel = this.getModel();
             let oViewModel = this.getModel("viewModel");
-            let sNatureOfSecurity = oViewModel.getProperty("/selectedTransactionRelatives/NatureOfSecurity")
+            let sNatureOfSecurity = oViewModel.getProperty("/selectedTransactionRelatives/NatureOfSecurity");
+            let oResourceBundle = this.getResourceBundle();
             let sRelative = oEvent.getSource().getSelectedKey().trim();
+            if (!sNatureOfSecurity || !sRelative) {
+                oViewModel.setProperty("/selectedTransactionRelatives/Noofsecuritiesprev", "");
+                oViewModel.setProperty("/selectedTransactionRelatives/Noofsecuritiesheld", "");
+                oViewModel.setProperty("/selectedTransactionRelatives/Relativetype", "");
+                oViewModel.setProperty("/selectedTransactionRelatives/PanNumber", "");
+                oViewModel.setProperty("/editable/relatives/Noofsecuritiesprev", false);
+                oViewModel.setProperty("/editable/RelativeType", false);
+                return;
+            }
             var oData = oEvent.getSource().getSelectedItem()?.getBindingContext("viewModel").getObject();
             oViewModel.setProperty("/selectedTransactionRelatives/Relativetype", oData.RelationOfImmediateRelative);
             // oViewModel.setProperty("/selectedTransactionRelatives/Relativeno", oData.RelativeType);
@@ -771,9 +780,6 @@ sap.ui.define([
             } else {
                 oViewModel.setProperty("/editable/RelativeType", false);
             }
-            if (!sNatureOfSecurity || !sRelative) {
-                return;
-            }
             let aData = oViewModel.getProperty("/TransactionRelatives") || [];
             let oLatestRecord = null;
             for (let i = aData.length - 1; i >= 0; i--) {
@@ -781,7 +787,7 @@ sap.ui.define([
                     oLatestRecord = aData[i];
                     break;
                 }
-            }            
+            }
             if (oLatestRecord) {
                 oViewModel.setProperty("/selectedTransactionRelatives/Noofsecuritiesprev", oLatestRecord.Noofsecuritiesheld);
                 oViewModel.setProperty("/editable/relatives/Noofsecuritiesprev", false);
@@ -795,10 +801,41 @@ sap.ui.define([
                     oModel.read("/PreviousSecuritiesSet", {
                         filters: aFilters,
                         success: function (oData) {
+                            let sSecurities = oData.results[0].NoOfSecuritiesheld;
+                            let isForm8 = oData.results[0].FromForm8;
+                            let isForm11 = oData.results[0].FromForm11;
                             if (oData.results[0].NoOfSecuritiesheld !== "NO") {
-                                let securities = oData.results[0].NoOfSecuritiesheld;
-                                oViewModel.setProperty("/selectedTransactionRelatives/Noofsecuritiesprev", Number(securities).toString());
-                                oViewModel.setProperty("/editable/relatives/Noofsecuritiesprev", false);
+                                if (isForm8 === "X" || isForm11 === "X") {
+                                    messenger.confirm(
+                                        oResourceBundle.getText("form8WarningTitle"),
+                                        oResourceBundle.getText("form8WarningText"),
+                                        oResourceBundle.getText("okBtnText"),
+                                        null,
+                                        function () {
+                                            oViewModel.setProperty(
+                                                "/selectedTransactionRelatives/Noofsecuritiesprev",
+                                                Number(sSecurities).toString()
+                                            );
+                                            that.updateNoOfSecuirites(oEvent);
+                                            oViewModel.setProperty(
+                                                "/editable/relatives/Noofsecuritiesprev",
+                                                true
+                                            );
+                                        }.bind(this)
+                                    );
+                                } else {
+                                    oViewModel.setProperty(
+                                        "/selectedTransactionRelatives/Noofsecuritiesprev",
+                                        Number(sSecurities).toString()
+                                    );
+                                    oViewModel.setProperty(
+                                        "/editable/relatives/Noofsecuritiesprev",
+                                        false
+                                    );
+                                }
+                                // let securities = oData.results[0].NoOfSecuritiesheld;
+                                // oViewModel.setProperty("/selectedTransactionRelatives/Noofsecuritiesprev", Number(securities).toString());
+                                // oViewModel.setProperty("/editable/relatives/Noofsecuritiesprev", false);
                             } else {
                                 oViewModel.setProperty("/selectedTransactionRelatives/Noofsecuritiesprev", null);
                                 oViewModel.setProperty("/editable/relatives/Noofsecuritiesprev", true);
@@ -826,7 +863,11 @@ sap.ui.define([
             let sPan = oViewModel.getProperty("/selectedTransactionRelatives/PanNumber");
             let sRelativeText = oViewModel.getProperty("/selectedTransactionRelatives/Relativetype");
             let sNatureOfSecurity = oEvent.getSource()?.getSelectedKey();
+            let oResourceBundle = this.getResourceBundle();
             if (!sRelativeText || !sNatureOfSecurity) {
+                oViewModel.setProperty("/selectedTransactionRelatives/Noofsecuritiesprev", "");
+                oViewModel.setProperty("/selectedTransactionRelatives/Noofsecuritiesheld", "");
+                oViewModel.setProperty("/editable/relatives/Noofsecuritiesprev", false);
                 return;
             }
             let sRelative = oEvent.getSource().getSelectedKey().trim();
@@ -853,9 +894,40 @@ sap.ui.define([
                         filters: aFilters,
                         success: function (oData) {
                             if (oData.results[0].NoOfSecuritiesheld !== "NO") {
-                                let securities = oData.results[0].NoOfSecuritiesheld;
-                                oViewModel.setProperty("/selectedTransactionRelatives/Noofsecuritiesprev", Number(securities).toString());
-                                oViewModel.setProperty("/editable/relatives/Noofsecuritiesprev", false);
+                                let sSecurities = oData.results[0].NoOfSecuritiesheld;
+                                let isForm8 = oData.results[0].FromForm8;
+                                let isForm11 = oData.results[0].FromForm11;
+                                if (isForm8 === "X" || isForm11 === "X") {
+                                    messenger.confirm(
+                                        oResourceBundle.getText("form8WarningTitle"),
+                                        oResourceBundle.getText("form8WarningText"),
+                                        oResourceBundle.getText("okBtnText"),
+                                        null,
+                                        function () {
+                                            oViewModel.setProperty(
+                                                "/selectedTransactionRelatives/Noofsecuritiesprev",
+                                                Number(sSecurities).toString()
+                                            );
+                                            that.updateNoOfSecuirites(oEvent);
+                                            oViewModel.setProperty(
+                                                "/editable/relatives/Noofsecuritiesprev",
+                                                true
+                                            );
+                                        }.bind(this)
+                                    );
+                                } else {
+                                    oViewModel.setProperty(
+                                        "/selectedTransactionRelatives/Noofsecuritiesprev",
+                                        Number(sSecurities).toString()
+                                    );
+                                    oViewModel.setProperty(
+                                        "/editable/relatives/Noofsecuritiesprev",
+                                        false
+                                    );
+                                }
+                                // let securities = oData.results[0].NoOfSecuritiesheld;
+                                // oViewModel.setProperty("/selectedTransactionRelatives/Noofsecuritiesprev", Number(securities).toString());
+                                // oViewModel.setProperty("/editable/relatives/Noofsecuritiesprev", false);
                             } else {
                                 oViewModel.setProperty("/selectedTransactionRelatives/Noofsecuritiesprev", null);
                                 oViewModel.setProperty("/editable/relatives/Noofsecuritiesprev", true);
@@ -916,7 +988,7 @@ sap.ui.define([
                 oViewModel = this.getModel("viewModel"),
                 oFormDetails = oViewModel.getProperty("/formDetails");
             var oModel = this.getModel();
-            messenger.confirm(sTitle, sText, "Confirm", null, async function () {
+            messenger.confirm(sTitle, sText, "Confirm", "Cancel", async function () {
                 BusyIndicator.show(0);
                 this.sActionFlag = "Draft";
                 let oPayload = await this.createRequestPayload();
@@ -948,7 +1020,7 @@ sap.ui.define([
                 bProceed = this.validateSubmitRequestDetails();
             var oModel = this.getModel();
             if (bProceed) {
-                messenger.confirm(sTitle, sText, "Confirm", null, async function () {
+                messenger.confirm(sTitle, sText, "Confirm", "Cancel", async function () {
                     BusyIndicator.show(0);
                     this.sActionFlag = "Confirmed";
                     let oPayload = await this.createRequestPayload();
@@ -1349,7 +1421,11 @@ sap.ui.define([
             let that = this;
             let oViewModel = this.getModel("viewModel");
             let sNatureOfSecurity = oEvent.getSource().getSelectedKey();
+            let oResourceBundle = this.getResourceBundle();
             if (!sNatureOfSecurity) {
+                oViewModel.setProperty("/selectedTransactionHolding/Noofsecuritiesprev", "");
+                oViewModel.setProperty("/selectedTransactionHolding/Noofsecuritiesheld", "");
+                oViewModel.setProperty("/editable/holdings/Noofsecuritiesprev", false);
                 return;
             }
             let aTableData = oViewModel.getProperty("/TransactionHolding") || [];
@@ -1392,24 +1468,39 @@ sap.ui.define([
                     success: function (oData) {
                         if (oData.results && oData.results.length > 0) {
                             let sSecurities = oData.results[0].NoOfSecuritiesheld;
+                            let isForm8 = oData.results[0].FromForm8;
                             if (sSecurities !== "NO") {
-                                oViewModel.setProperty(
-                                    "/selectedTransactionHolding/Noofsecuritiesprev",
-                                    Number(sSecurities).toString()
-                                );
-                                oViewModel.setProperty(
-                                    "/editable/holdings/Noofsecuritiesprev",
-                                    false
-                                );
+                                if (isForm8 === "X") {
+                                    messenger.confirm(
+                                        oResourceBundle.getText("form8WarningTitle"),
+                                        oResourceBundle.getText("form8WarningText"),
+                                        oResourceBundle.getText("okBtnText"),
+                                        null,
+                                        function () {
+                                            oViewModel.setProperty(
+                                                "/selectedTransactionHolding/Noofsecuritiesprev",
+                                                Number(sSecurities).toString()
+                                            );
+                                            that.updateNoOfSecuirites(oEvent);
+                                            oViewModel.setProperty(
+                                                "/editable/holdings/Noofsecuritiesprev",
+                                                true
+                                            );
+                                        }.bind(this)
+                                    );
+                                } else {
+                                    oViewModel.setProperty(
+                                        "/selectedTransactionHolding/Noofsecuritiesprev",
+                                        Number(sSecurities).toString()
+                                    );
+                                    oViewModel.setProperty(
+                                        "/editable/holdings/Noofsecuritiesprev",
+                                        false
+                                    );
+                                }
                             } else {
-                                oViewModel.setProperty(
-                                    "/selectedTransactionHolding/Noofsecuritiesprev",
-                                    ""
-                                );
-                                oViewModel.setProperty(
-                                    "/editable/holdings/Noofsecuritiesprev",
-                                    true
-                                );
+                                oViewModel.setProperty("/selectedTransactionHolding/Noofsecuritiesprev", "");
+                                oViewModel.setProperty("/editable/holdings/Noofsecuritiesprev", true);
                             }
                         } else {
                             oViewModel.setProperty(

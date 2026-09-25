@@ -21,7 +21,23 @@
                         persistencyKey="myPersKey"
                         useToolbar="false"
                         search=".onSearchBtn"
-                    >                        
+                    >  
+                        <fb:filterGroupItems>
+                            <fb:FilterGroupItem
+                                id="_IDGenFilterGroupItem1"
+                                name="Serial Number"
+                                label="{i18n>sno}"
+                                groupName="Group1"
+                                visibleInFilterBar="true"
+                            >
+                                <fb:control>
+                                    <Input
+                                        id="empID"
+                                        value="{viewModel>/filterData/Sno}"
+                                    />
+                                </fb:control>
+                            </fb:FilterGroupItem>
+                        </fb:filterGroupItems>                      
                         <fb:filterGroupItems>
                             <fb:FilterGroupItem
                                 id="_IDGenFilterGroupItem2"
@@ -119,6 +135,9 @@
                     </headerToolbar>
                     <columns>
                         <Column>
+                            <Text text="{i18n>sno}" />
+                        </Column>
+                        <Column>
                             <Text text="{i18n>employeeID}" />
                         </Column>
                         <Column>
@@ -128,16 +147,13 @@
                             <Text text="{i18n>ConfirmedOn}" />
                         </Column>
                         <Column>
-                            <Text text="{i18n>ConfirmedBy}" />
-                        </Column>
-                        <Column>
-                            <Text text="{i18n>status}" />
-                        </Column>
-                        <Column>
                             <Text text="{i18n>delayedStatus}" />
                         </Column>
                         <Column>
                             <Text text="{i18n>contraStatus}" />
+                        </Column>
+                        <Column>
+                            <Text text="{i18n>status}" />
                         </Column>
                     </columns>
                     <items>
@@ -146,6 +162,7 @@
                             press="onListItemPress"
                         >
                             <cells>
+                                <ObjectIdentifier title="{Sno}"/>
                                 <ObjectIdentifier title="{Pernr}" text="{EmployeeName}"/>
                                 <Text
                                     text="{
@@ -164,14 +181,13 @@
                                         }
                                 }"
                                 />
-                                <ObjectIdentifier title="{Pernr}" text="{EmployeeName}"/>
+                                <Text text="{Delayed}"></Text>
+                                <Text text="{Contra}"></Text>
                                 <ObjectStatus
                                     text="{path:'Status', formatter:'.formatter.formatTitleCase'}"
                                     class="sapMObjectStatusMedium statusBoldText"
                                     state="{path:'Status',formatter:'.formatter.formatStatusState'}"
                                 />
-                                <Text text="{Delayed}"></Text>
-                                <Text text="{Contra}"></Text>
                             </cells>
                         </ColumnListItem>
                     </items>

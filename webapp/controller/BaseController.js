@@ -556,18 +556,33 @@ sap.ui.define([
                     oSrc.setValueState(ValueState.None);
                     oSrc.setValueStateText(null);
                 }
-                if (sValue === "Bought" || sValue === "Sold") {
+                if (sValue === "Bought") {
                     let sPath = oSrc.getBindingContext("viewModel").getPath();
 
                     if (sPath.includes("selectedTransactionHolding")) {
                         oViewModel.setProperty("/selectedTransactionHolding/Securitysold", "0");
-                        oViewModel.setProperty("/selectedTransactionHolding/Securitypurchased", "0");
+                        oViewModel.setProperty("/selectedTransactionHolding/Securitypurchased", "");
                         oViewModel.setProperty("/selectedTransactionHolding/Securitysoldconso", "0");
-                        oViewModel.setProperty("/selectedTransactionHolding/Securitypurchasedconso", "0");
+                        oViewModel.setProperty("/selectedTransactionHolding/Securitypurchasedconso", "");
                     } else if (sPath.includes("selectedTransactionRelatives")) {
                         oViewModel.setProperty("/selectedTransactionRelatives/Securitysold", "0");
-                        oViewModel.setProperty("/selectedTransactionRelatives/Securitypurchased", "0");
+                        oViewModel.setProperty("/selectedTransactionRelatives/Securitypurchased", "");
                         oViewModel.setProperty("/selectedTransactionRelatives/Securitysoldconso", "0");
+                        oViewModel.setProperty("/selectedTransactionRelatives/Securitypurchasedconso", "");
+                    }
+                }
+                if (sValue === "Sold") {
+                    let sPath = oSrc.getBindingContext("viewModel").getPath();
+
+                    if (sPath.includes("selectedTransactionHolding")) {
+                        oViewModel.setProperty("/selectedTransactionHolding/Securitysold", "");
+                        oViewModel.setProperty("/selectedTransactionHolding/Securitypurchased", "0");
+                        oViewModel.setProperty("/selectedTransactionHolding/Securitysoldconso", "");
+                        oViewModel.setProperty("/selectedTransactionHolding/Securitypurchasedconso", "0");
+                    } else if (sPath.includes("selectedTransactionRelatives")) {
+                        oViewModel.setProperty("/selectedTransactionRelatives/Securitysold", "");
+                        oViewModel.setProperty("/selectedTransactionRelatives/Securitypurchased", "0");
+                        oViewModel.setProperty("/selectedTransactionRelatives/Securitysoldconso", "");
                         oViewModel.setProperty("/selectedTransactionRelatives/Securitypurchasedconso", "0");
                     }
                 }

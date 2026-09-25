@@ -8,9 +8,10 @@ sap.ui.define([
     "com/nhpc/zhrsecholdf9s1/utils/formatter",
     "com/nhpc/zhrsecholdf9s1/utils/messenger",
     "sap/ui/core/BusyIndicator",
-], (BaseController, Filter, FilterOperator, Spreadsheet, Fragment, ValueState, formatter, messenger, BusyIndicator) => {
+    "sap/ui/export/library"
+], (BaseController, Filter, FilterOperator, Spreadsheet, Fragment, ValueState, formatter, messenger, BusyIndicator, exportLibrary) => {
     "use strict";
-
+    var EdmType = exportLibrary.EdmType;
     return BaseController.extend("com.nhpc.zhrsecholdf9s1.controller.Dashboard", {
         formatter: formatter,
         onInit() {
@@ -32,10 +33,89 @@ sap.ui.define([
             var sTitle = oResourceBundle.getText("dashboardTableTitle") + " (" + iCount + ")";
             this.byId("dashBoardTitle").setText(sTitle);
         },
-        onCreate: function () {
+        onCreate: async function () {
+            let oResourceBundle = this.getResourceBundle();
+            let bDraftValid = await this.checkValidation();
+            if (!bDraftValid) {
+                messenger.error(
+                    oResourceBundle.getText("draftError")
+                );
+                return;
+            }
+            let bForm8Filled = await this.checkForm8Fill();
+            if (!bForm8Filled) {
+                messenger.error(
+                    oResourceBundle.getText("form8FillError")
+                );
+                return;
+            }
             this.getRouter().navTo("RouteDetail", {
                 Sno: "New",
                 Pernr: "New"
+            });
+        },
+
+        checkForm8Fill: function () {
+            let oModel = this.getModel();
+            let aFilters = [
+                new Filter(
+                    "ApprovalFlag",
+                    FilterOperator.EQ,
+                    "9"
+                )
+            ];
+            return new Promise((resolve) => {
+                oModel.read("/CheckAuthSet", {
+                    filters: aFilters,
+                    success: function (oResponse) {
+                        if (
+                            oResponse.results &&
+                            oResponse.results.length > 0
+                        ) {
+                            let sForm8Fill =
+                                oResponse.results[0].Form8Fill;
+                            resolve(sForm8Fill === "Yes");
+                        } else {
+                            resolve(false);
+                        }
+                    },
+                    error: function () {
+                        resolve(false);
+                    }
+                });
+            });
+        },
+        checkValidation: function () {
+            let oModel = this.getModel();
+            let aFilters = [
+                new Filter(
+                    "ApproverFlag",
+                    FilterOperator.EQ,
+                    "R"
+                ),
+                new Filter(
+                    "FormNo",
+                    FilterOperator.EQ,
+                    "FORM9"
+                ),
+                new Filter(
+                    "Status",
+                    FilterOperator.EQ,
+                    "Draft"
+                )
+            ];
+            return new Promise((resolve) => {
+                oModel.read("/Form9headSet", {
+                    filters: aFilters,
+                    success: function (oData) {
+                        resolve(
+                            oData.results.length === 0
+                        );
+                    },
+                    error: function () {
+                        resolve(false);
+                    }
+                });
             });
         },
         onListItemPress: async function (oEvent) {
@@ -106,51 +186,22 @@ sap.ui.define([
             }
         },
         onDownload: function () {
-            var oModel = this.getModel();
-            let oResourceBundle = this.getResourceBundle();
-            var aFilters = [
-                new sap.ui.model.Filter(
-                    "ApproverFlag",
-                    sap.ui.model.FilterOperator.EQ,
-                    "R"
-                ),
-                new sap.ui.model.Filter(
-                    "FormNo",
-                    sap.ui.model.FilterOperator.EQ,
-                    "FORM9"
-                )
-            ];
-            BusyIndicator.show(0);
-            oModel.read("/Form9headSet", {
-                filters: aFilters,
-                success: function (oData) {
-                    var aData = oData.results.map(function (oData) {
-                        var oRow = Object.assign({}, oData);
-                        oRow.CreatedOn = formatter.formatDate(oRow.CreatedOn);
-                        oRow.ConfirmedOn = formatter.formatDate(oRow.ConfirmedOn);
-                        return oRow;
-                    });
-                    var aCols = this.createColumnConfig();
-                    var oSettings = {
-                        workbook: {
-                            columns: aCols
-                        },
-                        dataSource: aData,
-                        fileType: "xlsx",
-                        fileName: this.getResourceBundle().getText("title")
-                    };
-                    var oSheet = new Spreadsheet(oSettings);
-                    oSheet.build()
-                        .finally(function () {
-                            oSheet.destroy();
-                            BusyIndicator.hide();
-                        });
-                }.bind(this),
-                error: function () {
-                    BusyIndicator.hide();
-                    messenger.error(oResourceBundle.getText("failedToDownloadData"));
-                }
-            });
+            var oTable = this.byId("idDashboardTable");
+            var oBinding = oTable.getBinding("items");
+            var aCols = this.createColumnConfig();
+            var oSettings = {
+                workbook: {
+                    columns: aCols
+                },
+                dataSource: oBinding,
+                fileType: "xlsx",
+                fileName: this.getResourceBundle().getText("title")
+            };
+            var oSheet = new Spreadsheet(oSettings);
+            oSheet.build()
+                .finally(function () {
+                    oSheet.destroy();
+                });
         },
         createColumnConfig: function () {
             var aCols = [];
@@ -165,22 +216,16 @@ sap.ui.define([
             aCols.push({
                 label: this.getResourceBundle().getText("createdOn"),
                 property: "CreatedOn",
+                type: EdmType.Date,
+                inputFormat: "yyyymmdd",
+                format: "dd.mm.yyyy"
             });
             aCols.push({
                 label: this.getResourceBundle().getText("ConfirmedOn"),
                 property: "ConfirmedOn",
-            });
-            aCols.push({
-                label: this.getResourceBundle().getText("ConfirmedByPernr"),
-                property: "Pernr"
-            });
-            aCols.push({
-                label: this.getResourceBundle().getText("ConfirmedBy"),
-                property: "EmployeeName"
-            });
-            aCols.push({
-                label: this.getResourceBundle().getText("status"),
-                property: "Status"
+                type: EdmType.Date,
+                inputFormat: "yyyymmdd",
+                format: "dd.mm.yyyy"
             });
             aCols.push({
                 label: this.getResourceBundle().getText("delayedStatus"),
@@ -189,6 +234,10 @@ sap.ui.define([
             aCols.push({
                 label: this.getResourceBundle().getText("contraStatus"),
                 property: "Contra"
+            });
+            aCols.push({
+                label: this.getResourceBundle().getText("status"),
+                property: "Status"
             });
             return aCols;
         },
