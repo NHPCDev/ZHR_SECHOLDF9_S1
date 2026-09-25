@@ -61,7 +61,7 @@ sap.ui.define([
                 new Filter(
                     "ApprovalFlag",
                     FilterOperator.EQ,
-                    "9"
+                    "R"
                 )
             ];
             return new Promise((resolve) => {
@@ -74,7 +74,7 @@ sap.ui.define([
                         ) {
                             let sForm8Fill =
                                 oResponse.results[0].Form8Fill;
-                            resolve(sForm8Fill === "Yes");
+                            resolve(sForm8Fill !== "No");
                         } else {
                             resolve(false);
                         }
