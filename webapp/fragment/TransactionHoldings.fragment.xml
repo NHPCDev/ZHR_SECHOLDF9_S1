@@ -106,13 +106,17 @@
                 <table:Column width="220px">
                     <Text text="{i18n>SecuritypurchasedConsideration}" />
                     <table:template>
-                        <Text text="{viewModel>Securitypurchasedconso}" />
+                    <!-- Start of Change: 06.11.2026: Balamurugan : Declaration added and total value label change -->
+                        <Text text="{path:'viewModel>Securitypurchasedconso',formatter:'.formatter.formatAmountToINR'}" />
+                        <!-- End of Change: 06.11.2026: Balamurugan : Declaration added and total value label change -->
                     </table:template>
                 </table:Column>
                 <table:Column width="220px">
                     <Text text="{i18n>SecuritysoldConsideration}" />
                     <table:template>
-                        <Text text="{viewModel>Securitysoldconso}" />
+                    <!-- Start of Change: 06.11.2026: Balamurugan : Declaration added and total value label change -->
+                        <Text text="{path:'viewModel>Securitysoldconso',formatter:'.formatter.formatAmountToINR'}" />
+                        <!-- End of Change: 06.11.2026: Balamurugan : Declaration added and total value label change -->
                     </table:template>
                 </table:Column>
                 <table:Column width="150px">

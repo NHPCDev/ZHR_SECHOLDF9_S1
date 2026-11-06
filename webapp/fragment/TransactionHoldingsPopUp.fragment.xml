@@ -88,21 +88,39 @@
                 valueStateText="{viewModel>/valueStateText/Securitysold}"
                 change=".onNumberInputChange" />
             <Label text="{i18n>SecuritypurchasedConsideration}" required="true" />
+            <!-- Start of Change: 06.11.2026: Balamurugan : Declaration added and total value label change -->
             <Input
-                value="{viewModel>Securitypurchasedconso}"
+                value="{path:'viewModel>Securitypurchasedconso',formatter:'.formatter.formatAmountToINR'}"
                 editable="{= ${viewModel>TransactionType} === 'Bought'}"
                 valueState="{viewModel>/valueState/Securitypurchasedconso}"
                 valueStateText="{viewModel>/valueStateText/Securitypurchasedconso}"
-                liveChange=".onNumberInputChange" />
-
+                change=".onAmountChange"
+            >
+                <customData>
+                    <core:CustomData
+                        key="path"
+                        value="/selectedTransactionHolding/Securitypurchasedconso"
+                        writeToDom="false"
+                    />
+                </customData>
+            </Input>
             <Label text="{i18n>SecuritysoldConsideration}" required="true" />
             <Input
-                value="{viewModel>Securitysoldconso}"
+                value="{path:'viewModel>Securitysoldconso',formatter:'.formatter.formatAmountToINR'}"
                 editable="{= ${viewModel>TransactionType} === 'Sold'}"
                 valueState="{viewModel>/valueState/Securitysoldconso}"
                 valueStateText="{viewModel>/valueStateText/Securitysoldconso}"
-                liveChange=".onNumberInputChange" />    
-
+                change=".onAmountChange" 
+            >
+                <customData>
+                    <core:CustomData
+                        key="path"
+                        value="/selectedTransactionHolding/Securitysoldconso"
+                        writeToDom="false"
+                    />
+                </customData>
+            </Input>    
+            <!-- End of Change: 06.11.2026: Balamurugan : Declaration added and total value label change -->
             <Label text="{i18n>Offmarket}" required="true" />
             <ComboBox
                 selectedKey="{viewModel>Offmarket}"

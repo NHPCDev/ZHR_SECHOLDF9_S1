@@ -20,17 +20,19 @@
                     textAlign="Center"
                     class="sapUiSmallMargin blueTitle"
                 />
+                <!-- Start of Change: 06.11.2026: Balamurugan : Declaration added and total value label change -->
                 <FormattedText
                     htmlText="{
         parts: [
-            { path: 'viewModel>/formDetails/EmployeeName' },
             { path: 'viewModel>/formDetails/Fromdate' },
-            { path: 'viewModel>/formDetails/Todate' }
+            { path: 'viewModel>/formDetails/Todate' },
+            {path:'viewModel>/formDetails/HeaderText'}
         ],
         formatter: '.formatter.formatName'
     }"
                     class="sapUiSmallMargin"
                 />
+                <!-- End of Change: 06.11.2026: Balamurugan : Declaration added and total value label change -->
                 <form:SimpleForm
                     class="sapUiSmallMargin"
                 >
@@ -137,15 +139,17 @@
                                 text="{i18n>SecuritypurchasedConsideration}"
                             />
                             <table:template>
+                            <!-- Start of Change: 06.11.2026: Balamurugan : Declaration added and total value label change -->
                                 <Text
-                                    text="{viewModel>Securitypurchasedconso}"
+                                    text="{path:'viewModel>Securitypurchasedconso',formatter:'.formatter.formatAmountToINR'}"
                                 />
                             </table:template>
                         </table:Column>
                         <table:Column width="220px">
                             <Text text="{i18n>SecuritysoldConsideration}" />
                             <table:template>
-                                <Text text="{viewModel>Securitysoldconso}" />
+                                <Text text="{path:'viewModel>Securitysoldconso',formatter:'.formatter.formatAmountToINR'}" />
+                                <!-- End of Change: 06.11.2026: Balamurugan : Declaration added and total value label change -->
                             </table:template>
                         </table:Column>
                         <table:Column width="150px">
@@ -255,15 +259,17 @@
                                 text="{i18n>SecuritypurchasedConsideration}"
                             />
                             <table:template>
+                            <!-- Start of Change: 06.11.2026: Balamurugan : Declaration added and total value label change -->
                                 <Text
-                                    text="{viewModel>Securitypurchasedconso}"
+                                    text="{path:'viewModel>Securitypurchasedconso',formatter:'.formatter.formatAmountToINR'}"
                                 />
                             </table:template>
                         </table:Column>
                         <table:Column width="220px">
                             <Text text="{i18n>SecuritysoldConsideration}" />
                             <table:template>
-                                <Text text="{viewModel>Securitysoldconso}" />
+                                <Text text="{path:'viewModel>Securitysoldconso',formatter:'.formatter.formatAmountToINR'}" />
+                                <!-- End of Change: 06.11.2026: Balamurugan : Declaration added and total value label change -->
                             </table:template>
                         </table:Column>
                         <table:Column width="150px">

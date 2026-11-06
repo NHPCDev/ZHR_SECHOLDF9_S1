@@ -127,6 +127,25 @@
                                     </uxap:ObjectPageSubSection>
                                 </uxap:subSections>
                             </uxap:ObjectPageSection>
+                            <!-- Start of Change: 06.11.2026: Balamurugan : Declaration added and total value label change -->
+                            <uxap:ObjectPageSection
+                                title="{i18n>undertakings}"
+                                titleUppercase="false"
+                            >
+                                <uxap:subSections>
+                                    <uxap:ObjectPageSubSection>
+                                        <uxap:blocks>
+                                            <VBox>
+                                                <core:Fragment
+                                                    fragmentName="com.nhpc.zhrsecholdf9s1.fragment.Undertakings"
+                                                    type="XML"
+                                                />
+                                            </VBox>
+                                        </uxap:blocks>
+                                    </uxap:ObjectPageSubSection>
+                                </uxap:subSections>
+                            </uxap:ObjectPageSection>
+                            <!-- End of Change: 06.11.2026: Balamurugan : Declaration added and total value label change -->
                             <uxap:ObjectPageSection
                                 title="{i18n>historyRemarks}"
                                 titleUppercase="false"

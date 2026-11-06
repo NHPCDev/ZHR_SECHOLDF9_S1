@@ -25,12 +25,17 @@ sap.ui.define([
             let oResourceBundle = this.getResourceBundle();
             let oViewModel = this.getModel("viewModel");
             let oModel = this.getModel();
+            //Start of Change: 06.11.2026: Balamurugan : Declaration added and total value label change
+            await this.getDefaultEmployeeDetails(sPernr);
+            //End of Change: 06.11.2026: Balamurugan : Declaration added and total value label change
             if (sPernr === "New") {
                 oViewModel.setProperty("/formDetails/Status", "New");
                 oViewModel.setProperty("/TransactionHolding", []);
                 oViewModel.setProperty("/TransactionRelatives", []);
                 oViewModel.setProperty("/sNo", "");
-                // await this.setUndertakingText();
+                //Start of Change: 06.11.2026: Balamurugan : Declaration added and total value label change
+                await this.setUndertakingText(oViewModel.getProperty("/formDetails/EmployeeId"));
+                //End of Change: 06.11.2026: Balamurugan : Declaration added and total value label change
                 this.byId("objPageHeader").setText(oResourceBundle.getText("createDialogTitle"));
                 this.byId("objPageHeader1").setText(oResourceBundle.getText("createDialogTitle"));
             } else {
@@ -39,7 +44,6 @@ sap.ui.define([
                 this.byId("objPageHeader").setText(oResourceBundle.getText("detailPageTitle", sNo));
                 this.byId("objPageHeader1").setText(oResourceBundle.getText("detailPageTitle", sNo));
             }
-            await this.getDefaultEmployeeDetails(sPernr);
             let Filters = [];
             let sPernrName = oViewModel.getProperty("/formDetails/EmployeeId");
             if (sPernrName) {
@@ -76,25 +80,31 @@ sap.ui.define([
                 }.bind(this)
             })
         },
-
-        setUndertakingText: async function () {
+        //Start of Change: 06.11.2026: Balamurugan : Declaration added and total value label change
+        setUndertakingText: async function (sPernr) {
             let oModel = this.getModel();
             let oViewModel = this.getModel("viewModel");
-            let oFilter = new Filter("Preview", FilterOperator.EQ, "X");
+            let oFilter = [];
+            oFilter.push(new Filter("formno", FilterOperator.EQ, "FORM9"));
+            oFilter.push(new Filter("pernr", FilterOperator.EQ, sPernr));
             await new Promise((resolve, reject) => {
                 BusyIndicator.show(0);
-                oModel.read("/Form9headSet", {
+                oModel.read("/ZHR_CDS_IT_DECLARATION_F4H", {
                     filters: [oFilter],
-                    urlParameters: {
-                        "$expand": "Form9HeadToSelf,Form9HeadToRelatives"
-                    },
                     success: function (oData) {
                         BusyIndicator.hide();
                         if (oData.results.length === 0) {
                             messenger.error("No Data Found");
                             return;
                         }
-                        oViewModel.setProperty("/formDetails/UndertakingText", oData.results[0].UndertakingText);
+                        oViewModel.setProperty("/formDetails/UndertakingText", oData.results[0].formtext);
+                        oViewModel.setProperty("/undertakingDocs", [
+                            {
+                                text: oData.results[0].formtext || "",
+                                selected: false
+                            }
+                        ]);
+                        //End of Change: 06.11.2026: Balamurugan : Declaration added and total value label change
                         resolve();
                     },
                     error: function (oError) {
@@ -169,7 +179,16 @@ sap.ui.define([
                         oViewModel.setProperty("/TransactionRelatives", oData.results[0].Form9HeadToRelatives.results);
                         oViewModel.setProperty("/formDetails/Status", oData.results[0].Status);
                         oViewModel.setProperty("/formDetails/UndertakingText", oData.results[0].UndertakingText);
+                        //Start of Change: 06.11.2026: Balamurugan : Declaration added and total value label change
+                        oViewModel.setProperty("/formDetails/HeaderText", oData.results[0].HeaderText);
                         oViewModel.setProperty("/formDetails/Designation", oData.results[0].Designation);
+                        oViewModel.setProperty("/undertakingDocs", [
+                            {
+                                text: oData.results[0].UndertakingText || "",
+                                selected: oData.results[0].Undertakingflg === "X"
+                            }
+                        ]);
+                        //End of Change: 06.11.2026: Balamurugan : Declaration added and total value label change
                         resolve();
                     },
                     error: function (oError) {
@@ -294,6 +313,10 @@ sap.ui.define([
             oViewModel.setProperty("/valueState/Relativetype", "None");
             oViewModel.setProperty("/valueState/Others", "None");
             oViewModel.setProperty("/valueState/NatureOfSecurity", "None");
+            //Start of Change: 06.11.2026: Balamurugan : Declaration added and total value label change
+            oViewModel.setProperty("/valueState/Securitysoldconso", "None");
+            oViewModel.setProperty("/valueState/Securitypurchasedconso", "None");
+            //End of Change: 06.11.2026: Balamurugan : Declaration added and total value label change
 
             oViewModel.setProperty("/valueStateText/Noofsecuritiesprev", null);
             oViewModel.setProperty("/valueStateText/securityPurchased", null);
@@ -307,6 +330,10 @@ sap.ui.define([
             oViewModel.setProperty("/valueStateText/Relativetype", null);
             oViewModel.setProperty("/valueStateText/Others", null);
             oViewModel.setProperty("/valueStateText/NatureOfSecurity", null);
+            //Start of Change: 06.11.2026: Balamurugan : Declaration added and total value label change
+            oViewModel.setProperty("/valueStateText/Securitysoldconso", null);
+            oViewModel.setProperty("/valueStateText/Securitypurchasedconso", null);
+            //End of Change: 06.11.2026: Balamurugan : Declaration added and total value label change
         },
 
         onAddTransactionHoldingDetails: async function () {
@@ -1055,6 +1082,15 @@ sap.ui.define([
                 bProceed = false;
                 messenger.error(oResourceBundle.getText("atLeastOneLineItemErrorMsg"));
             }
+            //Start of Change: 06.11.2026: Balamurugan : Declaration added and total value label change
+            const aUndertakingDocs = oViewModel.getProperty("/undertakingDocs") || [];
+            const bAllSelected = aUndertakingDocs.length > 0 &&
+                aUndertakingDocs.every(oDoc => oDoc.selected === true);
+            if (!bAllSelected) {
+                messenger.error(oResourceBundle.getText("undertakingErrorMsg"));
+                return;
+            }
+            //End of Change: 06.11.2026: Balamurugan : Declaration added and total value label change
             return bProceed;
         },
         createRequestPayload: async function () {
@@ -1090,7 +1126,10 @@ sap.ui.define([
                 Todate: oFormDetails.Todate,
                 Delayed: sDelayed,
                 Contra: sContra,
-                FormNo: "FORM9"
+                FormNo: "FORM9",
+                //Start of Change: 06.11.2026: Balamurugan : Declaration added and total value label change
+                Undertakingflg: oViewModel.getProperty("/undertakingDocs/0/selected") === true ? "X" : ""
+                //End of Change: 06.11.2026: Balamurugan : Declaration added and total value label change
             };
             let sNo = oViewModel.getProperty("/sNo");
             if (sNo) {
@@ -1526,6 +1565,46 @@ sap.ui.define([
                     }
                 });
             });
-        }
+        },
+        //Start of Change: 06.11.2026: Balamurugan : Declaration added and total value label change
+        onAmountChange: function (oEvent) {
+            const oSrc = oEvent.getSource();
+            const sValue = oEvent.getParameter("value") ?? "";
+            const oViewModel = this.getModel("viewModel");
+            const oResourceBundle = this.getResourceBundle();
+            const oFormatter = NumberFormat.getCurrencyInstance();
+            const sPath = oSrc.data("path");
+            if (!sPath) {
+                return;
+            }
+            const sField = sPath.substring(sPath.lastIndexOf("/") + 1);
+            const sValueStatePath = "/valueState/" + sField;
+            const sValueStateTextPath = "/valueStateText/" + sField;
+            if (sValue.trim() === "") {
+                oViewModel.setProperty(sPath, "");
+                oViewModel.setProperty(sValueStatePath, "None");
+                oViewModel.setProperty(sValueStateTextPath, "");
+                return;
+            }
+            let sParsedValue = sValue;
+            if (sParsedValue.includes("INR")) {
+                const aParsed = oFormatter.parse(sParsedValue);
+                sParsedValue = aParsed ? aParsed[0].toString() : "";
+            }
+            const oRegex = /^\d+(\.\d{0,2})?$/;
+            if (!oRegex.test(sParsedValue)) {
+                oViewModel.setProperty(sPath, "");
+                oViewModel.setProperty(sValueStatePath, "Error");
+                oViewModel.setProperty(sValueStateTextPath, oResourceBundle.getText("errMsgPositiveValue"));
+                messenger.error(oResourceBundle.getText("errMsgPositiveValue"));
+                return;
+            }
+            const sFormattedValue = parseFloat(sParsedValue).toFixed(2).toString();
+            oViewModel.setProperty(sPath, sFormattedValue);
+            oViewModel.setProperty(sValueStatePath, "None");
+            oViewModel.setProperty(sValueStateTextPath, "");
+            oSrc.setValue(formatter.formatAmountToINR(sFormattedValue));
+        },
+        //End of Change: 06.11.2026: Balamurugan : Declaration added and total value label change
     });
 });
