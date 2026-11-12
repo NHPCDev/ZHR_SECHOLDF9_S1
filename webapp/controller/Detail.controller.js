@@ -30,6 +30,7 @@ sap.ui.define([
             //End of Change: 06.11.2026: Balamurugan : Declaration added and total value label change
             if (sPernr === "New") {
                 oViewModel.setProperty("/formDetails/Status", "New");
+                oViewModel.setProperty("/formDetails/StatusText", "New");
                 oViewModel.setProperty("/TransactionHolding", []);
                 oViewModel.setProperty("/TransactionRelatives", []);
                 oViewModel.setProperty("/sNo", "");
@@ -178,6 +179,7 @@ sap.ui.define([
                         oViewModel.setProperty("/TransactionHolding", oData.results[0].Form9HeadToSelf.results);
                         oViewModel.setProperty("/TransactionRelatives", oData.results[0].Form9HeadToRelatives.results);
                         oViewModel.setProperty("/formDetails/Status", oData.results[0].Status);
+                        oViewModel.setProperty("/formDetails/StatusText", oData.results[0].StatusText);
                         oViewModel.setProperty("/formDetails/UndertakingText", oData.results[0].UndertakingText);
                         //Start of Change: 06.11.2026: Balamurugan : Declaration added and total value label change
                         oViewModel.setProperty("/formDetails/HeaderText", oData.results[0].HeaderText);
@@ -1017,7 +1019,7 @@ sap.ui.define([
             var oModel = this.getModel();
             messenger.confirm(sTitle, sText, "Confirm", "Cancel", async function () {
                 BusyIndicator.show(0);
-                this.sActionFlag = "Draft";
+                this.sActionFlag = "01";
                 let oPayload = await this.createRequestPayload();
                 oModel.create("/Form9headSet", oPayload, {
                     success: function (oResp) {
@@ -1049,7 +1051,7 @@ sap.ui.define([
             if (bProceed) {
                 messenger.confirm(sTitle, sText, "Confirm", "Cancel", async function () {
                     BusyIndicator.show(0);
-                    this.sActionFlag = "Confirmed";
+                    this.sActionFlag = "02";
                     let oPayload = await this.createRequestPayload();
                     oModel.create("/Form9headSet", oPayload, {
                         success: function (oResp) {

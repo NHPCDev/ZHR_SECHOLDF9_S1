@@ -184,7 +184,7 @@
                                 <Text text="{Delayed}"></Text>
                                 <Text text="{Contra}"></Text>
                                 <ObjectStatus
-                                    text="{path:'Status', formatter:'.formatter.formatTitleCase'}"
+                                    text="{path:'StatusText', formatter:'.formatter.formatTitleCase'}"
                                     class="sapMObjectStatusMedium statusBoldText"
                                     state="{path:'Status',formatter:'.formatter.formatStatusState'}"
                                 />

@@ -17,28 +17,28 @@
                 icon="sap-icon://add"
                 type="Accept"
                 press="onAddSecurityDetailsRelatives"
-                visible="{= ${viewModel>/formDetails/Status} === 'New' || ${viewModel>/formDetails/Status} === 'Draft' || ${viewModel>/formDetails/Status} === 'Returned'}"
+                visible="{= ${viewModel>/formDetails/Status} === 'New' || ${viewModel>/formDetails/Status} === '01' || ${viewModel>/formDetails/Status} === '04'}"
             />
             <Button
                 text="{i18n>deleteBtnText}"
                 icon="sap-icon://delete"
                 type="Reject"
                 press="onDeleteSecurityDetailsRelatives"
-                visible="{= ${viewModel>/formDetails/Status} === 'New' || ${viewModel>/formDetails/Status} === 'Draft' || ${viewModel>/formDetails/Status} === 'Returned'}"
+                visible="{= ${viewModel>/formDetails/Status} === 'New' || ${viewModel>/formDetails/Status} === '01' || ${viewModel>/formDetails/Status} === '04'}"
             />
             <Button
                 text="{i18n>editBtnText}"
                 icon="sap-icon://edit"
                 type="Emphasized"
                 press="onEditSecurityDetailsRelatives"
-                visible="{= ${viewModel>/formDetails/Status} === 'New' || ${viewModel>/formDetails/Status} === 'Draft' || ${viewModel>/formDetails/Status} === 'Returned'}"
+                visible="{= ${viewModel>/formDetails/Status} === 'New' || ${viewModel>/formDetails/Status} === '01' || ${viewModel>/formDetails/Status} === '04'}"
             />
         </Toolbar>
         <table:Table
             id="idTransactionRelativeTable"
             rows="{viewModel>/TransactionRelatives}"
             fixedColumnCount="1"
-            selectionMode="{= ${viewModel>/formDetails/Status} !== 'Approved' &amp;&amp; ${viewModel>/formDetails/Status} !== 'Confirmed' ? 'Single' : 'None'}"
+            selectionMode="{= ${viewModel>/formDetails/Status} !== '03' &amp;&amp; ${viewModel>/formDetails/Status} !== '02' ? 'Single' : 'None'}"
             selectionBehavior="Row"
             alternateRowColors="true"
             width="100%"
